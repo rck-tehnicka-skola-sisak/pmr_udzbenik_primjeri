@@ -1,0 +1,14 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>stage_simulation</name>
+  <version>0.0.0</version>
+  <description>Stage simulation package</description>
+
+  <maintainer email="info@romb-technologies.hr">Romb Technologies</maintainer>
+
+  <license>TODO</license>
+
+  <buildtool_depend>catkin</buildtool_depend>
+  <depend>rospy</depend>
+  <depend>stage_ros</depend>
+</package>

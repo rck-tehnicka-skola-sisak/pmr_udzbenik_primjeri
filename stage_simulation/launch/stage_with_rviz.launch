@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+<launch>
+  <node name="stage_simulator" pkg="stage_ros" type="stageros"
+        respawn="false" output="screen"
+        args="$(find rps_stage_worlds)/worlds/simple_rps.world">
+  </node>
+
+  <rosparam file="$(find stage_simulation)/cfg/robot_params.yaml" command="load"/>
+
+  <node pkg="stage_simulation" type="map_tf_broadcaster.py" name="map_tf_broadcaster"/>
+
+  <node pkg="map_server" type="map_server" name="map_server"
+    args="$(find rps_stage_worlds)/worlds/bitmaps/simple_rooms.yaml">
+    <remap from="~frame_id" to="map_frame_id"/>
+  </node>
+
+  <node pkg="rviz" type="rviz" name="rviz" args="-d $(find stage_simulation)/rviz/stage.rviz"/>
+</launch>

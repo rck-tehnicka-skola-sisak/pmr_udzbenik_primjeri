@@ -1,0 +1,12 @@
+<?xml version="1.0"?>
+<launch>
+  <node name="stage_simulator" pkg="stage_ros" type="stageros"
+        respawn="false" output="screen"
+        args="$(find rps_stage_worlds)/worlds/simple_rps.world">
+  </node>
+
+  <rosparam file="$(find stage_simulation)/cfg/robot_params.yaml" command="load"/>
+
+  <node pkg="stage_simulation" type="wheel_speed_publisher.py" name="wheel_speed_publisher"/>
+</launch>
+
