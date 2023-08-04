@@ -10,7 +10,7 @@ class ScanFilter:
   def __init__(self):
     self.pub_marker = rospy.Publisher("marker", Marker, queue_size=10)
     self.sub_laser_scan = rospy.Subscriber(
-      "base_scan", LaserScan, self.laserScanCallback)
+      "base_scan", LaserScan, self.laser_scan_callback)
 
     # definicija dijela Marker poruke koji se ne mjenja
     self.marker = Marker()
@@ -33,7 +33,7 @@ class ScanFilter:
     self.color.b = 255
     self.color.a = 255
 
-  def laserScanCallback(self, scan):
+  def laser_scan_callback(self, scan):
     self.marker.points.clear()
     self.marker.colors.clear()
     # petlja za prolazak kroz sve tocke skena

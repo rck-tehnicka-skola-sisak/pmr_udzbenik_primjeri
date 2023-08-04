@@ -8,20 +8,17 @@ class RobotVeloictyPublisher:
   def __init__(self):
     # definiranje clanova klase
     self.pub_twist = rospy.Publisher("robot_vel", Twist, queue_size=10)
-    self.sub_left_wheel = rospy.Subscriber(
-      "left_wheel_speed", Float64, self.leftWheelSpeedCallback)
-    self.sub_right_wheel = rospy.Subscriber(
-      "right_wheel_speed", Float64, self.rightWheelSpeedCallback)
+    self.sub_left_wheel = rospy.Subscriber("left_wheel_speed", Float64, self.left_wheel_speed_callback)
+    self.sub_right_wheel = rospy.Subscriber("right_wheel_speed", Float64, self.right_wheel_speed_callback)
     self.wl = 0.0 # clan za spremanje kutne brzine proizvoljnog kotaca
 
-  def leftWheelSpeedCallback(self, data):
+  def left_wheel_speed_callback(self, data):
     self.wl = data.data
 
   # Racunanje brzine robota i objavljivanje na robot_vel temu
-  def rightWheelSpeedCallback(self, data):
+  def right_wheel_speed_callback(self, data):
     r = rospy.get_param('wheel_radius', 0.2) # radijus kotaca
-    d = rospy.get_param(
-      'd', 0.19) # udaljenost od kotaca do baze robota
+    d = rospy.get_param('distance_to_wheel', 0.19) # udaljenost od kotaca do baze robota
     vr = data.data * r # linearna brzina desnog kotaca
     vl = self.wl * r # linearna brzina lijevog kotaca
     twist = Twist()
