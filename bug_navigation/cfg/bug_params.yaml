@@ -1,0 +1,11 @@
+# Bug algorithm parameters
+side_angle: 1.0471975512 # [rad]
+front_angle: 0.52359877559 # [rad]
+obstacle_detection_distance: 0.5 # [m]
+goal_tolerance: 0.3 # [m]
+
+# Speeds
+v_following: 0.5
+w_in_place_rotation: 0.3
+v_turning: 0.2
+w_turning: -0.3

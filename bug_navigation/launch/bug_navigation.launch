@@ -1,0 +1,10 @@
+<?xml version="1.0"?>
+<launch>
+  <node name="bug" pkg="bug_navigation" type="bug.py" output="screen">
+    <rosparam file="$(find bug_navigation)/cfg/bug_params.yaml" command="load"/>
+    <remap from="cmd_vel" to="diff_drive/cmd_vel"/>
+    <remap from="odom" to="diff_drive/odom"/>
+    <remap from="scan" to="laser/scan"/>
+  </node>
+</launch>
+
