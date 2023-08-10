@@ -77,7 +77,6 @@ class BugNavigation:
                         self.current_pose[0] - self.goal[0], # b
                         self.current_pose[1] * (self.goal[0] - self.current_pose[0]) - \
                         self.current_pose[0] * (self.goal[1] - self.current_pose[1])) # c
-      self.switch_point = self.current_pose
 
     # provjera je li cilj dostignut
     if self.dist_between_points((self.current_pose[0], self.current_pose[1]), self.goal) < rospy.get_param('bug_tolerance', 0.3):
@@ -85,7 +84,6 @@ class BugNavigation:
       return
 
     # promijena rezima rada u slijedenje direktnog pravca
-    rospy.logerr(f'{self.dist_from_trackline(self.trackline, (self.current_pose[0], self.current_pose[1]))}')
     if self.following_stage == OBSTACLE_FOLLOWING and \
        self.dist_from_trackline(self.trackline, (self.current_pose[0], self.current_pose[1])) < 0.05 and \
        self.dist_between_points((self.current_pose[0], self.current_pose[1]), self.switch_point) > 0.2:
