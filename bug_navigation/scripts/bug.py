@@ -13,7 +13,6 @@ OBSTACLE_FOLLOWING = 1
 class BugNavigation:
   def __init__(self):
     self.following_stage = LINE_FOLLOWING
-    self.bug_initialized = False
     self.trackline = None
     self.switch_point = None
     self.current_pose = None
@@ -33,7 +32,6 @@ class BugNavigation:
     if self.goal_reached:
       # resetiranje inicijalizacije bug algoritma
       self.goal_reached = False
-      self.bug_initialized = False
       self.goal = (req.goal.x, req.goal.y)
 
       # objava tocke cilja, za vizualizaciju
@@ -42,7 +40,12 @@ class BugNavigation:
       point.header.stamp = rospy.Time.now()
       point.point.x = self.goal[0]
       point.point.y = self.goal[1]
-      self.pub_point.publish(point)
+      self.pub_point.publish(point)      
+
+      self.trackline = (self.goal[1] - self.current_pose[1], # a
+                        self.current_pose[0] - self.goal[0], # b
+                        self.current_pose[1] * (self.goal[0] - self.current_pose[0]) - \
+                        self.current_pose[0] * (self.goal[1] - self.current_pose[1])) # c
       return SetBugGoalResponse(True)
 
     # ukoliko je navigacija vec aktivna vrati False
@@ -59,10 +62,6 @@ class BugNavigation:
 
 
   def odomCallback(self, odom):
-    # ako je cilj dostignut nema potrebe ista racunati
-    if self.goal_reached:
-      return
-
     # dohvacanje trenutne poze
     euler = transformations.euler_from_quaternion((odom.pose.pose.orientation.x,
                                                    odom.pose.pose.orientation.y,
@@ -70,13 +69,9 @@ class BugNavigation:
                                                    odom.pose.pose.orientation.w))
     self.current_pose = (odom.pose.pose.position.x, odom.pose.pose.position.y, euler[2])
 
-    # inicijalizacij bug algoritma racunanjem direktnog pravca do cilja
-    if not self.bug_initialized:
-      self.bug_initialized = True
-      self.trackline = (self.goal[1] - self.current_pose[1], # a
-                        self.current_pose[0] - self.goal[0], # b
-                        self.current_pose[1] * (self.goal[0] - self.current_pose[0]) - \
-                        self.current_pose[0] * (self.goal[1] - self.current_pose[1])) # c
+    # ako je cilj dostignut nema potrebe provjeravati algoritam
+    if self.goal_reached:
+      return
 
     # provjera je li cilj dostignut
     if self.dist_between_points((self.current_pose[0], self.current_pose[1]), self.goal) < rospy.get_param('bug_tolerance', 0.3):
@@ -94,7 +89,7 @@ class BugNavigation:
       twist = Twist()
 
       # ako bug algoritam nije inicijaliziran ili je cilj dostignut vozilo treba zaustaviti
-      if not self.bug_initialized or self.goal_reached:
+      if self.goal_reached:
         self.pub_cmd_vel.publish(twist)
         return
 
