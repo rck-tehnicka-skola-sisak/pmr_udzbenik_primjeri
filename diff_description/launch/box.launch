@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+<launch>
+  <arg name="robot_name" default="robot"/>
+  <arg name="x" default="0"/>
+  <arg name="y" default="0"/>
+  <arg name="z" default="0"/>
+  <arg name="yaw" default="0"/>
+
+  <include file="$(find diff_description)/launch/world.launch"/>
+
+
+  <param name="robot_description" textfile="$(find diff_description)/urdf/box.urdf"/>
+
+  <node name="spawn_urdf" pkg="gazebo_ros" type="spawn_model" args="-urdf -model $(arg robot_name) -param robot_description -x $(arg x) -y $(arg y) -z $(arg z) -Y $(arg yaw)" respawn="false" output="screen"/>
+
+</launch>

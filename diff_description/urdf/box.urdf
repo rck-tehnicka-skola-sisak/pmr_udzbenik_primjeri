@@ -1,0 +1,32 @@
+<?xml version="1.0"?>
+<robot name="robot">
+  <link name="base_link"/>
+
+  <link name="box_link">
+    <inertial>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <mass value="12"/>
+      <inertia ixx="0.25"  ixy="0"  ixz="0" iyy="0.41" iyz="0" izz="0.34" />
+     </inertial>
+
+     <visual>
+       <origin xyz="0 0 0" rpy="0 0 0" />
+       <geometry>
+         <box size="0.5 0.3 0.4" />
+       </geometry>
+     </visual>
+
+     <collision>
+       <origin xyz="0 0 0" rpy="0 0 0"/>
+       <geometry>
+         <sphere radius="0.3"/>
+       </geometry>
+     </collision>
+   </link>
+
+  <joint name="base_link_to_link" type="fixed">
+    <parent link="base_link"/>
+    <child link="box_link"/>
+    <origin xyz="0 0 0"/>
+  </joint>
+</robot>

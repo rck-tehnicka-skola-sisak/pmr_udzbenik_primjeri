@@ -7,7 +7,7 @@
   <arg name="yaw" default="0"/>
 
   <include file="$(find diff_description)/launch/world.launch">
-    <arg name="world_name" value="$(find diff_description)/world/robot.world"/>
+    <arg name="world_name" value="$(find diff_description)/world/diff.world"/>
   </include>
 
   <include file="$(find diff_description)/launch/spawn_diff.launch">
