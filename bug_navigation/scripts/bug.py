@@ -42,8 +42,7 @@ class BugNavigation:
         point = PointStamped()
         point.header.frame_id = 'odom'
         point.header.stamp = rospy.Time.now()
-        point.point.x = self.goal[0]
-        point.point.y = self.goal[1]
+        point.point = req.goal
         self.pub_point.publish(point)
 
         # izracun pravca do cilja
@@ -55,7 +54,7 @@ class BugNavigation:
 
 
     def dist_from_trackline(self, trackline, point):
-        return abs(trackline[0] * point[0] + trackline[1] * point[1] + trackline[2]) / sqrt(pow(trackline[0], 2) + pow(trackline[1], 2))
+        return abs(trackline[0] * point[0] + trackline[1] * point[1] + trackline[2]) / sqrt(trackline[0]**2 + trackline[1]**2)
 
 
     def dist_between_points(self, point1, point2):
@@ -81,7 +80,7 @@ class BugNavigation:
 
         # promijena rezima rada u slijedenje direktnog pravca
         if self.following_stage == OBSTACLE_FOLLOWING and \
-           self.dist_from_trackline(self.trackline, (self.current_pose[0], self.current_pose[1])) < 0.05 and \
+           self.dist_from_trackline(self.trackline, self.current_pose) < 0.05 and \
            self.dist_between_points(self.current_pose, self.switch_point) > 0.2:
             self.following_stage = LINE_FOLLOWING
 
