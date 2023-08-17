@@ -3,7 +3,7 @@ import rospy
 from geometry_msgs.msg import Twist, PointStamped
 from sensor_msgs.msg import LaserScan
 from nav_msgs.msg import Odometry
-from math import sqrt, pow, atan2, pi
+from math import sqrt, atan2, pi
 from tf import transformations
 from bug_navigation.srv import SetBugGoal, SetBugGoalResponse
 
@@ -59,7 +59,7 @@ class BugNavigation:
 
 
     def dist_between_points(self, point1, point2):
-        return sqrt(pow(point2[0] - point1[0], 2) + pow(point2[1] - point1[1], 2))
+        return sqrt((point2[0] - point1[0])**2 + (point2[1] - point1[1])**2)
 
 
     def odomCallback(self, odom):
@@ -75,14 +75,14 @@ class BugNavigation:
             return
 
         # provjera je li cilj dostignut
-        if self.dist_between_points((self.current_pose[0], self.current_pose[1]), self.goal) < rospy.get_param('bug_tolerance', 0.3):
+        if self.dist_between_points(self.current_pose, self.goal) < rospy.get_param('bug_tolerance', 0.3):
             self.goal_reached = True
             return
 
         # promijena rezima rada u slijedenje direktnog pravca
         if self.following_stage == OBSTACLE_FOLLOWING and \
            self.dist_from_trackline(self.trackline, (self.current_pose[0], self.current_pose[1])) < 0.05 and \
-           self.dist_between_points((self.current_pose[0], self.current_pose[1]), self.switch_point) > 0.2:
+           self.dist_between_points(self.current_pose, self.switch_point) > 0.2:
             self.following_stage = LINE_FOLLOWING
 
 
@@ -99,9 +99,10 @@ class BugNavigation:
         front_angle = rospy.get_param('~front_angle', 30 / 180 * pi)
         side_angle = rospy.get_param('~side_angle', 60 / 180 * pi)
 
-        obstacle_left = min(min(scan.ranges[int(-(scan.angle_min - front_angle) / scan.angle_increment):int(-(scan.angle_min - side_angle) / scan.angle_increment)]), 10) < obst_dist
-        obstacle_front = min(min(scan.ranges[int(-(scan.angle_min + front_angle) / scan.angle_increment):int(-(scan.angle_min - front_angle) / scan.angle_increment)]), 10) < obst_dist
-        obstacle_right = min(min(scan.ranges[int(-(scan.angle_min + side_angle) / scan.angle_increment):int(-(scan.angle_min + front_angle) / scan.angle_increment)]), 10) < obst_dist
+        obstacle_left = min(scan.ranges[int((front_angle - scan.angle_min) / scan.angle_increment):int((side_angle - scan.angle_min) / scan.angle_increment)]) < obst_dist
+        obstacle_front = min(scan.ranges[int(-(front_angle + scan.angle_min) / scan.angle_increment):int((front_angle - scan.angle_min) / scan.angle_increment)]) < obst_dist
+        obstacle_right = min(scan.ranges[int(-(side_angle + scan.angle_min) / scan.angle_increment):int(-(front_angle + scan.angle_min) / scan.angle_increment)]) < obst_dist
+
 
         # promijena rezima rada u slijedenje prepreke
         if self.following_stage == LINE_FOLLOWING and obstacle_front:
