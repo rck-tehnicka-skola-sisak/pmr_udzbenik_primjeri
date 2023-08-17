@@ -33,6 +33,7 @@ class BugNavigation:
       # resetiranje inicijalizacije bug algoritma
       self.goal_reached = False
       self.goal = (req.goal.x, req.goal.y)
+      self.following_stage = LINE_FOLLOWING
 
       # objava tocke cilja, za vizualizaciju
       point = PointStamped()
@@ -88,7 +89,7 @@ class BugNavigation:
   def scanCallback(self, scan):
       twist = Twist()
 
-      # ako bug algoritam nije inicijaliziran ili je cilj dostignut vozilo treba zaustaviti
+      # ako je cilj dostignut vozilo treba zaustaviti
       if self.goal_reached:
         self.pub_cmd_vel.publish(twist)
         return
