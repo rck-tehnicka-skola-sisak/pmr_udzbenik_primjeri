@@ -1,0 +1,25 @@
+# Konfiguracija lokalnog planera trajektorije
+# koji na temelju globalnog plana računa
+# zadane brzine kotača
+TrajectoryPlannerROS:
+  # Limiti linearne brzine
+  max_vel_x: 1
+  min_vel_x: 0.1
+  # Limiti kutne brzine
+  max_vel_theta: 1.0
+  min_in_place_vel_theta: 0.4
+
+  # Limiti linearne akceleracije
+  acc_lim_x: 0.7
+  # Limit kutne akceleracije
+  acc_lim_theta: 1.5
+
+  # Robot s diferencijalnim pogonom
+  # nije holonomski, što znači da
+  # se može gibati samo u smjeru
+  # u kojem je orijentiran
+  holonomic_robot: false
+
+  meter_scoring: true
+  dwa: false
+  

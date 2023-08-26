@@ -1,0 +1,14 @@
+# Konfiguracija globalne karte troška
+global_costmap:
+  # Koordinatni sustav karte troška
+  global_frame: map
+  # Koordinatni sustav baze robota
+  robot_base_frame: base_link
+  # Frekvencija osvježavanja karte troška, u Hz
+  update_frequency: 5.0
+  
+  plugins: 
+    - {name: static_layer,       type: "costmap_2d::StaticLayer"}
+    - {name: obstacle_layer,       type: "costmap_2d::ObstacleLayer"}
+    - {name: inflation_layer,        type: "costmap_2d::InflationLayer"}
+  

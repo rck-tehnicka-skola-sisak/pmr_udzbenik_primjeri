@@ -1,0 +1,26 @@
+<?xml version="1.0"?>
+<launch>
+  <!-- Launch the map server node -->
+  <node name="map_server" pkg="map_server" type="map_server"
+        args = "$(env HOME)/.ros/navigation_map.yaml"/>
+
+  <!-- Launch the localization node -->
+  <node name="amcl" pkg="amcl" type="amcl">
+    <param name="use_map_topic" value="true"/>
+    <remap from="scan" to="laser/scan"/>
+  </node>
+
+  <node pkg="move_base" type="move_base" name="move_base">
+    <rosparam file="$(find autonomous_navigation)/config/costmap_common_params.yaml" command="load" ns="global_costmap"/> 
+    <rosparam file="$(find autonomous_navigation)/config/costmap_common_params.yaml" command="load" ns="local_costmap"/>
+    <rosparam file="$(find autonomous_navigation)/config/local_costmap_params.yaml" command="load"/>
+    <rosparam file="$(find autonomous_navigation)/config/global_costmap_params.yaml" command="load"/> 
+    <rosparam file="$(find autonomous_navigation)/config/base_local_planner_params.yaml" command="load"/>
+    <remap from="cmd_vel" to="diff_drive/cmd_vel"/>
+    <remap from="odom" to="diff_drive/odom"/>
+ </node>
+
+  <!-- Visualize in RViz -->
+  <node name="rviz" pkg="rviz" type="rviz"
+        args="-d $(find autonomous_navigation)/rviz/move_base.rviz"/>
+</launch>

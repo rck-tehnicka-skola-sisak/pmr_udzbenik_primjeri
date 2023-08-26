@@ -1,0 +1,22 @@
+# Konfiguracija lokalne karte troška
+local_costmap:
+  # Koordinatni sustav karte troška
+  global_frame: odom
+  # Koordinatni sustav baze robota
+  robot_base_frame: base_link
+  # Frekvencija osvježavanja karte troška, u Hz
+  update_frequency: 5.0
+  # Frekvencija objavljivanja karte troška
+  # za potrebe vizualizacije, u Hz
+  publish_frequency: 2.0
+
+  # Karta treba ostati centrirana na robotu
+  # za vrijeme gibanja kroz prostor
+  rolling_window: true
+  # Širina i visina lokalne karte troška
+  width: 6.0
+  height: 6.0
+  # Rezolucija lokalne karte troška
+  # Najčešće koristimo istu rezoluciju
+  # kao i za statičku kartu prostora
+  resolution: 0.05
