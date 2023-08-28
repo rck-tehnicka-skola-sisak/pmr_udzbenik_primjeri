@@ -1,13 +1,13 @@
 # Zajednička konfiguracija za sve karte troška
 # (globalnu i lokalnu)
 
-# Poligon koji opisuje vanjske dimenzije vozila
+# Poligon koji opisuje vanjske dimenzije vozila.
+# Mjerne jedinice su metri.
 footprint: [[-0.225, -0.145], [0.125, -0.145], [0.125, 0.145], [-0.225, 0.145]]
 
-# Sve planirane putanje koje su od prepreke udaljene
-# više od vrijednosti inflation_radius imaju jednak trošak
-#inflation_radius: 0.55
-
+# Tipovi podataka uključeni u karte troška.
+# U ovom slučaju to su prepreke i "Inflation layer"
+# koji predstavlja sigurnosnu zonu oko prepreka.
 plugins: 
   - {name: obstacle_layer,       type: "costmap_2d::ObstacleLayer"}
   - {name: inflation_layer,        type: "costmap_2d::InflationLayer"}
@@ -25,4 +25,6 @@ obstacle_layer:
   raytrace_range: 3.0
 
 inflation_layer:
+  # Sve planirane putanje koje su od prepreke udaljene
+  # više od vrijednosti inflation_radius imaju jednak trošak
   inflation_radius: 0.55

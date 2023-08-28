@@ -20,6 +20,14 @@ TrajectoryPlannerROS:
   # u kojem je orijentiran
   holonomic_robot: false
 
+  # Udaljenosti na karti troška
+  # izražavamo u metrima
   meter_scoring: true
+
+  # Ne koristimo "Dynamic Window Approach",
+  # nego "Trajectory Rollout", algoritam
+  # koji bolje uzima u obzir ograničenja
+  # ubrzanja (zbog toga je nešto računski
+  # zahtjevniji)
   dwa: false
   
