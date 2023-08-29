@@ -8,4 +8,4 @@ goal_tolerance: 0.3 # [m]
 v_following: 0.5
 w_in_place_rotation: 0.3
 v_turning: 0.2
-w_turning: -0.3
+w_turning: 0.3

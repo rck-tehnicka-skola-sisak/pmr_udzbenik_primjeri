@@ -1,10 +1,16 @@
 <?xml version="1.0"?>
 <launch>
+  <include file="$(find bug_navigation)/launch/bug_world.launch"/>
+
   <node name="bug" pkg="bug_navigation" type="bug.py" output="screen">
     <rosparam file="$(find bug_navigation)/cfg/bug_params.yaml" command="load"/>
     <remap from="cmd_vel" to="diff_drive/cmd_vel"/>
+<!--    <remap from="odom" to="/robot/robotnik_base_control/odom"/>
+    <remap from="scan" to="/robot/front_laser/scan_filtered"/>-->
     <remap from="odom" to="diff_drive/odom"/>
     <remap from="scan" to="laser/scan"/>
   </node>
+
+  <node pkg="rviz" type="rviz" name="rviz" args="-d $(find bug_navigation)/rviz/bug.rviz"/>
 </launch>
 

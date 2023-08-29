@@ -14,10 +14,12 @@ class BugNavigation:
     def __init__(self):
         self.following_stage = LINE_FOLLOWING
         self.trackline = None
-        self.switch_point = None
         self.current_pose = None
         self.goal_reached = True
         self.goal = None
+
+        self.driving_along_trackline = False
+        self.left_trackline = False
 
         self.pub_cmd_vel = rospy.Publisher('cmd_vel', Twist, queue_size=1)
         self.pub_point = rospy.Publisher('goal', PointStamped, queue_size=1)
@@ -50,6 +52,7 @@ class BugNavigation:
                           self.current_pose[0] - self.goal[0], # b
                           self.current_pose[1] * (self.goal[0] - self.current_pose[0]) - \
                           self.current_pose[0] * (self.goal[1] - self.current_pose[1])) # c
+
         return SetBugGoalResponse(True)
 
 
@@ -74,15 +77,18 @@ class BugNavigation:
             return
 
         # provjera je li cilj dostignut
-        if self.dist_between_points(self.current_pose, self.goal) < rospy.get_param('bug_tolerance', 0.3):
+        if self.dist_between_points(self.current_pose, self.goal) < rospy.get_param('~goal_tolerance'):
             self.goal_reached = True
             return
 
         # promijena rezima rada u slijedenje direktnog pravca
-        if self.following_stage == OBSTACLE_FOLLOWING and \
-           self.dist_from_trackline(self.trackline, self.current_pose) < 0.05 and \
-           self.dist_between_points(self.current_pose, self.switch_point) > 0.2:
-            self.following_stage = LINE_FOLLOWING
+        if self.following_stage == OBSTACLE_FOLLOWING:
+            trackline_dist = self.dist_from_trackline(self.trackline, self.current_pose)
+            if trackline_dist > 0.2:
+                self.left_trackline = True
+            if self.left_trackline and self.dist_from_trackline(self.trackline, self.current_pose) < 0.05:
+                self.driving_along_trackline = False
+                self.following_stage = LINE_FOLLOWING
 
 
     def scanCallback(self, scan):
@@ -94,19 +100,29 @@ class BugNavigation:
             return
 
         # obrada skena i otkrivanje prepreke
-        obst_dist = rospy.get_param('~obstacle_detection_distance', 0.5)
-        front_angle = rospy.get_param('~front_angle', 30 / 180 * pi)
-        side_angle = rospy.get_param('~side_angle', 60 / 180 * pi)
+        obst_dist = rospy.get_param('~obstacle_detection_distance')
+        front_angle = rospy.get_param('~front_angle')
+        side_angle = rospy.get_param('~side_angle')
 
-        obstacle_left = min(scan.ranges[int((front_angle - scan.angle_min) / scan.angle_increment):int((side_angle - scan.angle_min) / scan.angle_increment)]) < obst_dist
-        obstacle_front = min(scan.ranges[int(-(front_angle + scan.angle_min) / scan.angle_increment):int((front_angle - scan.angle_min) / scan.angle_increment)]) < obst_dist
-        obstacle_right = min(scan.ranges[int(-(side_angle + scan.angle_min) / scan.angle_increment):int(-(front_angle + scan.angle_min) / scan.angle_increment)]) < obst_dist
+        # za lijevi dio skena
+        left_start_idx = int((front_angle - scan.angle_min) / scan.angle_increment)
+        left_end_idx = int((side_angle - scan.angle_min) / scan.angle_increment)
+        obstacle_left = min(scan.ranges[left_start_idx:left_end_idx]) < obst_dist
 
+        # za prednji dio skena
+        front_start_idx = int(-(front_angle + scan.angle_min) / scan.angle_increment)
+        front_end_idx = left_start_idx
+        obstacle_front = min(scan.ranges[front_start_idx:front_end_idx]) < obst_dist
+
+        # za desni dio skena
+        right_start_idx = int(-(side_angle + scan.angle_min) / scan.angle_increment)
+        right_end_idx = front_start_idx
+        obstacle_right = min(scan.ranges[right_start_idx:right_end_idx]) < obst_dist
 
         # promijena rezima rada u slijedenje prepreke
-        if self.following_stage == LINE_FOLLOWING and obstacle_front:
+        if self.following_stage == LINE_FOLLOWING and obstacle_front and self.driving_along_trackline:
+            self.left_trackline = False
             self.following_stage = OBSTACLE_FOLLOWING
-            self.switch_point = self.current_pose
 
         # racunanje brzine ovisno o rezimu rada
         if self.following_stage == LINE_FOLLOWING:
@@ -123,14 +139,17 @@ class BugNavigation:
 
         # ako je robot poravnat s pravcem treba krenuti prema cilju
         if abs(angle) < 1 / 180 * pi:
-            twist.linear.x = rospy.get_param('~v_following', 0.5)
+            twist.linear.x = rospy.get_param('~v_following')
+            self.driving_along_trackline = True
 
         # ako robot orijentacijom odstupa od orijentacije pravca potrebno je
         # poravnati robota, u lijevo ili u desno ovisno o razlici kutova
-        elif angle > 0.0:
-            twist.angular.z = abs(rospy.get_param('~w_in_place_rotation', 0.3))
+        elif angle > 0.0 and angle < pi or angle < 0.0 and angle < -pi:
+            twist.angular.z = abs(rospy.get_param('~w_in_place_rotation'))
+            self.driving_along_trackline = False
         else:
-            twist.angular.z = -abs(rospy.get_param('~w_in_place_rotation', 0.3))
+            twist.angular.z = -abs(rospy.get_param('~w_in_place_rotation'))
+            self.driving_along_trackline = False
 
         return twist
 
@@ -140,19 +159,19 @@ class BugNavigation:
 
         # postavljene vrijednosti za poravnanje s preprekom
         twist.linear.x = 0.0
-        twist.angular.z = rospy.get_param('~w_in_place_rotation', 0.3)
+        twist.angular.z = rospy.get_param('~w_in_place_rotation')
 
         # slijedenje prepreke
         if (not obstacle_left and not obstacle_front and obstacle_right) or \
             (obstacle_left and not obstacle_front and obstacle_right):
-            twist.linear.x = rospy.get_param('~v_following', 0.5)
+            twist.linear.x = rospy.get_param('~v_following')
             twist.angular.z = 0.0
 
         # pronalazak konture prepreke
         elif (not obstacle_left and not obstacle_front and not obstacle_right) or \
              (obstacle_left and not obstacle_front and not obstacle_right):
-            twist.linear.x = rospy.get_param('~v_turning', 0.2)
-            twist.angular.z = rospy.get_param('~w_turning', -0.3)
+            twist.linear.x = rospy.get_param('~v_turning')
+            twist.angular.z = -rospy.get_param('~w_turning')
 
         return twist
 
